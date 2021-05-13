@@ -30,12 +30,12 @@ module "vpc" {
   enable_dns_hostnames = true
 
   public_subnet_tags = {
-    "kubernetes.io/cluster/${var.name}-eks-cluster" = "shared"
+    "kubernetes.io/cluster/${var.name}_cluster-1_${var.region}_${var.environment}" = "shared"
     "kubernetes.io/role/elb"                      = "1"
   }
 
   private_subnet_tags = {
-    "kubernetes.io/cluster/${var.name}-eks-cluster" = "shared"
+    "kubernetes.io/cluster/${var.name}_cluster-1_${var.region}_${var.environment}" = "shared"
     "kubernetes.io/role/internal-elb"             = "1"
   }
 }
@@ -50,6 +50,11 @@ module "eks" {
     Environment = var.environment
   }
 
+  workers_additional_policies = [
+    aws_iam_policy.alb_ingress_controller_iam_policy.arn,
+    aws_iam_policy.external_dns_iam_policy.arn
+  ]
+
   vpc_id = module.vpc.vpc_id
 
   node_groups = {
@@ -57,7 +62,6 @@ module "eks" {
       desired_capacity = 2
       max_capacity     = 10
       min_capacity     = 2
-
       instance_type = "m5a.medium"
       launch_template_id      = aws_launch_template.default.id
       launch_template_version = aws_launch_template.default.default_version
@@ -69,8 +73,17 @@ module "eks" {
       }
     }
   }
-
+  
   map_roles    = var.map_roles
   map_users    = var.map_users
   map_accounts = var.map_accounts
+}
+
+resource "aws_iam_policy" "alb_ingress_controller_iam_policy" {
+  name   = "ALBIngressControllerIAMPolicy"
+  policy = file("iam/policies/ALBIngressControllerIAMPolicy.json")
+}
+resource "aws_iam_policy" "external_dns_iam_policy" {
+  name   = "ExternalDNSPolicy"
+  policy = file("iam/policies/ExternalDNSPolicy.json")
 }

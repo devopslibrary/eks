@@ -2,6 +2,10 @@ variable "name" {
   default = "lair"
 }
 
+variable "domain" {
+  default = "arctictern.dev"
+}
+
 variable "region" {
   default = "us-east-1"
 }

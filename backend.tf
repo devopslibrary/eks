@@ -1,6 +1,6 @@
 # Configure the AWS Provider
 provider "aws" {
-  region  = var.region
+  region = var.region
 }
 
 # Use S3 as Backend
